@@ -11,6 +11,7 @@ pub mod page;
 pub mod decoder;
 pub mod generic;
 pub mod mmr;
+pub mod refinement;
 
 #[cfg(test)]
 mod tests;

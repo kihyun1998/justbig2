@@ -219,11 +219,11 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - Template 1: 10픽셀 컨텍스트
 - GRAT adaptive 파라미터
 
-**테스트:** `tests::refinement::template0_refine`, `template1_refine`
+**테스트:** `tests::refinement::template0_refine`, `template1_refine`, `template0_deterministic`, `with_offset`, `stats_size_values`
 
 ### Step 7.2 — TPGRON (Typical Prediction)
 
-**테스트:** `tests::refinement::tpgron_prediction`
+**테스트:** `tests::refinement::tpgron_prediction`, `tpgron_template0`, `tpgron_implicit_value_uniform_ref`
 
 ---
 
