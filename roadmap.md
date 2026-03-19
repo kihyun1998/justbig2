@@ -347,7 +347,7 @@ pub struct Page {
 }
 ```
 
-**테스트:** `tests::api::basic_decode_flow`, `api_embedded_flow`
+**테스트:** `tests::api::basic_decode_flow`, `api_embedded_flow`, `decoder_method_page`, `decode_returns_empty_on_no_pages`
 
 ### Step 12.2 — 성능 최적화
 

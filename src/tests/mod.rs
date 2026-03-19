@@ -15,3 +15,4 @@ mod refinement;
 mod symbol_dict;
 mod text;
 mod halftone;
+mod api;
