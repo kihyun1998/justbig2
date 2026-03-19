@@ -156,6 +156,25 @@ fn tpgd_all_templates() {
     }
 }
 
+// --- Step 5.5: MMR mode ---
+
+#[test]
+fn mmr_mode_decode() {
+    use crate::mmr::decode_generic_mmr;
+
+    // EOFB-only stream → all white via MMR
+    let data = vec![0x00, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let mut image = Jbig2Image::new(16, 4);
+    decode_generic_mmr(&data, &mut image).unwrap();
+
+    // Verify all white
+    for y in 0..4 {
+        for x in 0..16 {
+            assert_eq!(image.get_pixel(x, y), 0);
+        }
+    }
+}
+
 // --- Stats size ---
 
 #[test]
