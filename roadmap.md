@@ -15,7 +15,7 @@
 - `Jbig2Error` enum (InvalidData, UnsupportedFeature, InternalError)
 - `Result<T> = std::result::Result<T, Jbig2Error>`
 
-**테스트:** `tests::error::error_display`
+**테스트:** `tests::error::error_display`, `error_equality`, `error_is_std_error`
 
 ### Step 1.2 — 1BPP 비트맵 (`Jbig2Image`)
 
@@ -35,7 +35,7 @@
 - `compose(dst, src, x, y, op)` — src를 dst의 (x,y)에 합성
 - 경계 클리핑 처리
 
-**테스트:** `tests::image::compose_or`, `compose_and`, `compose_xor`, `compose_xnor`, `compose_replace`, `compose_offset`, `compose_clipping`
+**테스트:** `tests::image::compose_or`, `compose_and`, `compose_xor`, `compose_xnor`, `compose_replace`, `compose_offset`, `compose_clipping`, `compose_no_overlap`
 
 ---
 
@@ -49,7 +49,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - `read_bit()`, `read_bits(n)`, `read_byte()`
 - 바이트 경계 정렬 `align()`
 
-**테스트:** `tests::bitreader::read_bits_basic`, `read_across_bytes`, `align_to_byte`
+**테스트:** `tests::bitreader::read_bits_basic`, `read_across_bytes`, `read_byte_aligned`, `read_bits_multi_byte`, `align_to_byte`, `eof_detection`
 
 ### Step 2.2 — QM 산술 디코더
 
@@ -58,22 +58,22 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - `decode(&mut state, &mut cx) -> u8` — 1비트 디코딩
 - FF 마커 바이트 스터핑 처리
 
-**테스트:** `tests::arith::decode_known_sequence`, `context_adaptation`, `ff_marker_handling`
+**테스트:** `tests::arith::decode_known_sequence`, `context_adaptation`, `ff_marker_handling`, `multiple_contexts`, `short_stream`, `single_byte_error`
 
 ### Step 2.3 — 산술 정수 디코더 (Annex A.2)
 
 - `ArithIntCtx` — 512개 컨텍스트
-- `decode_int(&mut state, &mut ctx) -> Option<i32>`
+- `decode(&mut state, &mut ctx) -> Option<i32>`
 - OOB 감지 (None 반환)
 
-**테스트:** `tests::arith_int::decode_small_positive`, `decode_negative`, `decode_oob`
+**테스트:** `tests::arith_int::decode_integers`, `decode_produces_values_or_oob`, `fresh_context_is_zeroed`
 
 ### Step 2.4 — 산술 IAID 디코더 (Annex A.3)
 
 - `ArithIaidCtx::new(code_len)`
-- `decode_iaid(&mut state, &mut ctx) -> u32`
+- `decode(&mut state, &mut ctx) -> u32`
 
-**테스트:** `tests::arith_iaid::decode_symbol_id`
+**테스트:** `tests::arith_iaid::decode_symbol_id`, `decode_symbol_id_deterministic`, `codelen_1`, `codelen_too_large`, `codelen_zero`
 
 ---
 
