@@ -12,3 +12,4 @@ mod decoder;
 mod generic;
 mod mmr;
 mod refinement;
+mod symbol_dict;

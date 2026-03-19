@@ -12,6 +12,7 @@ pub mod decoder;
 pub mod generic;
 pub mod mmr;
 pub mod refinement;
+pub mod symbol_dict;
 
 #[cfg(test)]
 mod tests;

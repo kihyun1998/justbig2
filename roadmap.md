@@ -236,22 +236,15 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - 사전 연결 (`cat`)
 - 내보내기 심볼 선택
 
-**테스트:** `tests::symbol_dict::create_empty`, `cat_two_dicts`, `export_symbols`
+**테스트:** `tests::symbol_dict::create_empty`, `set_and_get_glyph`, `cat_two_dicts`, `cat_empty_dicts`, `export_symbols`, `export_none`
 
-### Step 8.2 — 산술 코딩 심볼 사전 디코딩
+### Step 8.2 — 파라미터 파싱 & 산술 코딩 경로
 
-- SDHUFF=false 경로
-- 템플릿 0~3 선택, GBAT
+- `SymbolDictParams::parse()` — 플래그, SDAT, SDRAT, 심볼 수
+- SDHUFF=false 경로, 템플릿 0~3 선택, GBAT
 - Refinement aggregation (SDREFAGG)
 
-**테스트:** `tests::symbol_dict::decode_arithmetic`
-
-### Step 8.3 — 허프만 코딩 심볼 사전 디코딩
-
-- SDHUFF=true 경로
-- DH/DW/BMSIZE/AGGINST 허프만 테이블
-
-**테스트:** `tests::symbol_dict::decode_huffman`
+**테스트:** `tests::symbol_dict::parse_params_arithmetic`, `parse_params_huffman`, `parse_params_with_refagg`
 
 ---
 
