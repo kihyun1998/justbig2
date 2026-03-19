@@ -119,14 +119,14 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - 플래그: Sequential/Random-access, 페이지 수
 - Embedded 모드 (헤더 없음)
 
-**테스트:** `tests::header::parse_valid_header`, `reject_bad_magic`, `parse_embedded_no_header`
+**테스트:** `tests::header::parse_valid_header`, `parse_random_access_unknown_pages`, `reject_bad_magic`, `parse_embedded_no_header`, `too_short_returns_none`, `reject_amendment2`
 
 ### Step 4.2 — 세그먼트 헤더 파싱
 
 - 세그먼트 번호, 타입, 페이지 연관, 참조 세그먼트, 데이터 길이
 - referred-to 세그먼트 목록 파싱
 
-**테스트:** `tests::segment::parse_segment_header`, `parse_with_referred_segments`
+**테스트:** `tests::segment::parse_segment_header`, `parse_with_referred_segments`, `parse_needs_more_data`, `parse_region_segment_info`
 
 ### Step 4.3 — 세그먼트 디스패치
 
@@ -135,6 +135,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 
 **테스트:** `tests::segment::dispatch_known_types`, `skip_unknown_type`
 
+
 ### Step 4.4 — 페이지 관리
 
 - `Page` — 상태 (New → Complete → Returned), 비트맵, 해상도
@@ -142,7 +143,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - 기본 픽셀 값 (흰색/검은색)
 - End of Page / End of Stripe / End of File 처리
 
-**테스트:** `tests::page::create_page`, `page_default_pixel`, `stripe_extend`
+**테스트:** `tests::page::create_page`, `page_default_pixel`, `stripe_extend`, `page_complete_state`, `page_end_row`
 
 ### Step 4.5 — 디코더 컨텍스트
 
@@ -151,7 +152,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - `page_out() -> Option<Jbig2Image>` — 완성된 페이지 반환
 - 글로벌 컨텍스트 (Embedded 모드용)
 
-**테스트:** `tests::context::sequential_state_machine`, `embedded_mode`
+**테스트:** `tests::decoder::sequential_state_machine`, `embedded_mode`, `incremental_write`, `no_page_before_complete`
 
 ---
 
@@ -399,7 +400,10 @@ cargo test --lib
 cargo test tests::image       # Phase 1
 cargo test tests::arith       # Phase 2
 cargo test tests::huffman     # Phase 3
+cargo test tests::header       # Phase 4
 cargo test tests::segment     # Phase 4
+cargo test tests::page         # Phase 4
+cargo test tests::decoder     # Phase 4
 cargo test tests::generic     # Phase 5
 cargo test tests::mmr         # Phase 6
 cargo test tests::refinement  # Phase 7

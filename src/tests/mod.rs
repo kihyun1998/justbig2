@@ -5,3 +5,7 @@ mod arith;
 mod arith_int;
 mod arith_iaid;
 mod huffman;
+mod header;
+mod segment;
+mod page;
+mod decoder;
