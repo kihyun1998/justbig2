@@ -1,10 +1,10 @@
 [package]
 name = "justbig2"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Ki Hyun Park <justkihyun1998@gmail.com>"]
 description = "Pure Rust JBIG2 image decoder with no_std support"
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
 repository = "https://github.com/kihyun1998/justbig2"
 readme = "README.md"
 keywords = ["jbig2", "image", "decoder", "pdf", "codec"]
