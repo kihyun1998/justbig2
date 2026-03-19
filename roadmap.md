@@ -286,15 +286,15 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - 타일 크기 (HDPW×HDPH), 그레이 레벨 수 (GRAYMAX)
 - MMR/Arithmetic 디코딩
 
-**테스트:** `tests::halftone::parse_pattern_dict`, `decode_patterns`
+**테스트:** `tests::halftone::parse_pattern_dict`, `parse_pattern_dict_mmr`, `decode_patterns`
 
 ### Step 10.2 — 하프톤 영역 디코딩
 
-- 그리드 배치 (HGW, HGH, HGX, HGY, HRX, HRY)
+- 그리드 배치 (HGW, HGH, HGX, HGY, HRX, HRY) — 8.8 고정소수점 좌표 변환
 - Skip 마스크 (HENABLESKIP)
-- 합성 연산자 적용
+- 합성 연산자 적용, 기본 픽셀
 
-**테스트:** `tests::halftone::decode_halftone_region`, `halftone_with_skip`
+**테스트:** `tests::halftone::parse_halftone_region`, `decode_halftone_simple`, `halftone_with_skip`, `halftone_default_pixel`
 
 ---
 

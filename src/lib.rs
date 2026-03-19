@@ -14,6 +14,7 @@ pub mod mmr;
 pub mod refinement;
 pub mod symbol_dict;
 pub mod text;
+pub mod halftone;
 
 #[cfg(test)]
 mod tests;

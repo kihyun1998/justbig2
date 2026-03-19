@@ -14,3 +14,4 @@ mod mmr;
 mod refinement;
 mod symbol_dict;
 mod text;
+mod halftone;
