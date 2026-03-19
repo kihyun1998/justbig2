@@ -13,3 +13,4 @@ mod generic;
 mod mmr;
 mod refinement;
 mod symbol_dict;
+mod text;

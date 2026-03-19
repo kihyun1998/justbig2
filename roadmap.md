@@ -255,7 +255,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - SBHUFF, SBREFINE, TRANSPOSED, REFCORNER, SBCOMBOP
 - 스트립 파라미터, 인스턴스 수
 
-**테스트:** `tests::text::parse_params`
+**테스트:** `tests::text::parse_params`, `parse_params_transposed`, `parse_params_with_refinement`
 
 ### Step 9.2 — 산술 코딩 텍스트 디코딩
 
@@ -263,19 +263,19 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - 인스턴스별 글리프 배치 (델타 위치)
 - REFCORNER 4종, TRANSPOSED
 
-**테스트:** `tests::text::decode_arithmetic_basic`, `decode_transposed`
+**테스트:** `tests::text::decode_arithmetic_basic`, `decode_transposed`, `decode_all_refcorners`, `decode_zero_instances`, `decode_multi_dict`
 
 ### Step 9.3 — 허프만 코딩 텍스트 디코딩
 
 - 8개 허프만 테이블 (FS/DS/DT/RDW/RDH/RDX/RDY/RSIZE)
 
-**테스트:** `tests::text::decode_huffman_basic`
+**테스트:** `tests::text::decode_huffman_returns_unsupported`
 
 ### Step 9.4 — 텍스트 리파인먼트
 
 - SBREFINE=true일 때 배치 시 글리프 정제
 
-**테스트:** `tests::text::decode_with_refinement`
+**테스트:** `tests::text::decode_with_refinement_flag`
 
 ---
 
