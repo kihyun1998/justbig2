@@ -162,14 +162,14 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 
 - `GenericRegionParams` — 너비, 높이, 템플릿(0-3), GBAT, TPGD, MMR 플래그
 
-**테스트:** `tests::generic::parse_params`
+**테스트:** `tests::generic::parse_params`, `stats_size_values`
 
 ### Step 5.2 — Template 0 (16-pixel context)
 
 - 비최적화 구현 (모든 GBAT 위치 지원)
 - 최적화 구현 (기본 GBAT일 때 워드 단위 처리)
 
-**테스트:** `tests::generic::template0_basic`, `template0_optimized`
+**테스트:** `tests::generic::template0_basic`, `template0_deterministic`, `template0_unopt`, `zero_width_image`
 
 ### Step 5.3 — Template 1, 2, 3
 
@@ -181,7 +181,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 
 - 동일 행 스킵 최적화
 
-**테스트:** `tests::generic::tpgd_skip_identical_rows`
+**테스트:** `tests::generic::tpgd_skip_identical_rows`, `tpgd_all_templates`
 
 ### Step 5.5 — Generic Region MMR 모드
 

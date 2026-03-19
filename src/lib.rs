@@ -9,6 +9,7 @@ pub mod header;
 pub mod segment;
 pub mod page;
 pub mod decoder;
+pub mod generic;
 
 #[cfg(test)]
 mod tests;

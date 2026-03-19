@@ -9,3 +9,4 @@ mod header;
 mod segment;
 mod page;
 mod decoder;
+mod generic;
