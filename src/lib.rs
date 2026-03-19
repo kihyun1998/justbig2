@@ -10,6 +10,7 @@ pub mod segment;
 pub mod page;
 pub mod decoder;
 pub mod generic;
+pub mod mmr;
 
 #[cfg(test)]
 mod tests;

@@ -203,10 +203,11 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 
 ### Step 6.2 — 2D 디코딩
 
-- Pass / Horizontal / Vertical 모드
+- Pass / Horizontal / Vertical 모드 (V0, VR1-3, VL1-3)
 - 참조 행 기반 디코딩
+- EOFB 감지 및 잔여 행 채움
 
-**테스트:** `tests::mmr::decode_simple_page`, `decode_alternating_pattern`
+**테스트:** `tests::mmr::decode_simple_page`, `decode_alternating_pattern`, `eofb_fills_remaining_rows`, `consumed_bytes_reported`, `zero_height`, `deterministic`
 
 ---
 

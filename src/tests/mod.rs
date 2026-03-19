@@ -10,3 +10,4 @@ mod segment;
 mod page;
 mod decoder;
 mod generic;
+mod mmr;
