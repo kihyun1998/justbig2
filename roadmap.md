@@ -86,7 +86,7 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - OOB / LOW / HIGH 특수 엔트리
 - `build_table(lines) -> HuffmanTable`
 
-**테스트:** `tests::huffman::build_standard_table_a`, `build_with_oob`
+**테스트:** `tests::huffman::build_standard_table_a`, `build_with_oob`, `all_standard_tables_valid`
 
 ### Step 3.2 — 허프만 디코딩
 
@@ -95,19 +95,19 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - `get_bits(&mut state, n) -> u32`
 - `align(&mut state)` — 바이트 경계 정렬
 
-**테스트:** `tests::huffman::decode_table_a_values`, `decode_oob_signal`
+**테스트:** `tests::huffman::decode_table_a_values`, `decode_table_a_second_line`, `decode_oob_signal`, `decode_multiple_values`, `get_bits_basic`, `align_boundary`
 
 ### Step 3.3 — 표준 테이블 15종 (Annex B)
 
 - `STANDARD_TABLES: [&[HuffmanLine]; 15]` — Table A(B.1) ~ Table O(B.15)
 
-**테스트:** `tests::huffman::all_standard_tables_valid`, `table_b1_known_values`, `table_b4_known_values`
+**테스트:** `tests::huffman::table_b1_known_values`, `table_b4_known_values`, `standard_table_line_counts`
 
 ### Step 3.4 — 사용자 정의 허프만 테이블 (세그먼트 타입 53)
 
 - 세그먼트 데이터에서 커스텀 테이블 파싱
 
-**테스트:** `tests::huffman::parse_user_table`
+**테스트:** `tests::huffman::parse_user_table_basic`, `parse_user_table_with_oob`
 
 ---
 
