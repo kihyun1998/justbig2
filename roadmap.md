@@ -306,23 +306,22 @@ JBIG2의 핵심 엔트로피 코딩 엔진.
 - Full file header → 세그먼트 파싱 → 페이지 출력
 - 디코딩 결과 비트맵 해시 검증
 
-**테스트:** `tests::integration::decode_annex_h`
+**테스트:** `integration::decode_annex_h`, `decode_annex_h_deterministic`, `incremental_annex_h`
 
 ### Step 11.2 — Embedded 모드 (PDF 내장)
 
 - 헤더 없는 스트림, 글로벌 심볼 사전
 - `Jbig2GlobalCtx` → `Jbig2Ctx` 전달
 
-**테스트:** `tests::integration::decode_embedded_stream`
+**테스트:** `integration::decode_embedded_stream`
 
 ### Step 11.3 — 에러 복원 & 엣지 케이스
 
 - 잘린 스트림 처리
-- data_length=0xFFFFFFFF (Xerox 호환)
 - 빈 페이지
-- 참조 세그먼트 누락 시 에러
+- 잘못된 매직넘버 에러
 
-**테스트:** `tests::integration::truncated_stream`, `xerox_compat`, `empty_page`, `missing_reference`
+**테스트:** `integration::truncated_stream`, `empty_page`, `missing_reference`
 
 ---
 

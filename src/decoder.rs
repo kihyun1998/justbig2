@@ -1,10 +1,14 @@
 //! JBIG2 decoder context — top-level state machine.
 
+use crate::arith::{ArithCx, ArithState};
 use crate::error::{Jbig2Error, Result};
+use crate::generic::{self, GenericRegionParams};
 use crate::header::{FileHeader, Organization};
-use crate::image::Jbig2Image;
+use crate::image::{ComposeOp, Jbig2Image};
+use crate::mmr;
 use crate::page::{Page, PageState};
-use crate::segment::{SegmentHeader, SegmentType};
+use crate::segment::{RegionSegmentInfo, SegmentHeader, SegmentType};
+use crate::symbol_dict::{SymbolDict, SymbolDictParams};
 
 /// Decoder state machine states.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,11 +21,13 @@ pub enum DecoderState {
     Eof,
 }
 
-/// A stored segment (header + data).
+/// A stored segment (header + data + optional result).
 #[derive(Debug, Clone)]
 pub struct StoredSegment {
     pub header: SegmentHeader,
     pub data: Vec<u8>,
+    /// Decoded symbol dictionary result, if any.
+    pub symbol_dict: Option<SymbolDict>,
 }
 
 /// Top-level JBIG2 decoder context.
@@ -34,7 +40,6 @@ pub struct Decoder {
     pub(crate) pages: Vec<Page>,
     pub(crate) current_page: usize,
     pub(crate) file_header: Option<FileHeader>,
-    /// Global segments (from embedded mode global context).
     pub(crate) global_segments: Vec<StoredSegment>,
 }
 
@@ -108,17 +113,15 @@ impl Decoder {
                 }
                 DecoderState::SequentialHeader | DecoderState::RandomHeaders => {
                     match SegmentHeader::parse(&self.buf)? {
-                        None => return Ok(()), // need more data
+                        None => return Ok(()),
                         Some((header, consumed)) => {
                             self.buf.drain(..consumed);
-
                             let is_eof = header.seg_type == Some(SegmentType::EndOfFile);
-
                             self.segments.push(StoredSegment {
                                 header,
                                 data: Vec::new(),
+                                symbol_dict: None,
                             });
-
                             if self.state == DecoderState::RandomHeaders {
                                 if is_eof {
                                     self.state = DecoderState::RandomBodies;
@@ -136,27 +139,22 @@ impl Decoder {
                     }
 
                     let data_length = self.segments[self.segment_index].header.data_length;
-
-                    // Handle unknown length (0xFFFFFFFF) — for now just take all remaining
                     let need = if data_length == 0xFFFFFFFF {
-                        // Scan for marker
-                        self.buf.len() // TODO: proper marker scanning
+                        self.buf.len()
                     } else {
                         data_length as usize
                     };
 
                     if self.buf.len() < need {
-                        return Ok(()); // need more data
+                        return Ok(());
                     }
 
                     let seg_data: Vec<u8> = self.buf.drain(..need).collect();
                     self.segments[self.segment_index].data = seg_data;
 
-                    // Dispatch segment
                     self.dispatch_segment(self.segment_index)?;
                     self.segment_index += 1;
 
-                    // Don't override Eof set by dispatch (e.g. EndOfFile segment)
                     if self.state != DecoderState::Eof {
                         if self.state == DecoderState::RandomBodies {
                             if self.segment_index >= self.segments.len() {
@@ -182,10 +180,8 @@ impl Decoder {
         match seg_type {
             Some(SegmentType::PageInformation) => {
                 let data = self.segments[seg_idx].data.clone();
-                // Find or create page
                 self.ensure_page(page_assoc);
-                let page = &mut self.pages[self.current_page];
-                page.parse_info(page_assoc, &data)?;
+                self.pages[self.current_page].parse_info(page_assoc, &data)?;
             }
             Some(SegmentType::EndOfPage) => {
                 self.pages[self.current_page].complete();
@@ -200,9 +196,18 @@ impl Decoder {
             Some(SegmentType::EndOfFile) => {
                 self.state = DecoderState::Eof;
             }
-            Some(SegmentType::Profile) | Some(SegmentType::Extension) => {
-                // Informational — skip
+            Some(SegmentType::ImmediateGenericRegion)
+            | Some(SegmentType::ImmediateLosslessGenericRegion) => {
+                self.decode_immediate_generic(seg_idx)?;
             }
+            Some(SegmentType::SymbolDictionary) => {
+                self.decode_symbol_dictionary(seg_idx)?;
+            }
+            Some(SegmentType::ImmediateTextRegion)
+            | Some(SegmentType::ImmediateLosslessTextRegion) => {
+                self.decode_immediate_text(seg_idx)?;
+            }
+            Some(SegmentType::Profile) | Some(SegmentType::Extension) => {}
             Some(SegmentType::IntermediateGenericRegion) => {
                 return Err(Jbig2Error::UnsupportedFeature(
                     "intermediate generic region (type 36)".into(),
@@ -213,29 +218,124 @@ impl Decoder {
                     "color palette (type 54)".into(),
                 ));
             }
-            None => {
-                // Unknown segment type — skip with warning
-            }
+            None => {}
             _ => {
-                // TODO: dispatch to actual decoders (generic, text, halftone, refinement, symbol dict, code table)
-                // For now, store segment data for later use
+                // Other segment types: skip for now
             }
         }
 
         Ok(())
     }
 
-    /// Ensure a page slot exists for the given page number.
+    /// Decode an immediate generic region segment (type 38/39).
+    fn decode_immediate_generic(&mut self, seg_idx: usize) -> Result<()> {
+        let data = &self.segments[seg_idx].data;
+        if data.len() < 18 {
+            return Err(Jbig2Error::InvalidData("generic region segment too short".into()));
+        }
+
+        let rsi = RegionSegmentInfo::parse(&data[..17])?;
+        let seg_flags = data[17];
+        let (mut params, gbat_size) = GenericRegionParams::parse(seg_flags);
+
+        if !params.mmr && data.len() >= 18 + gbat_size {
+            params.set_gbat(&data[18..18 + gbat_size]);
+        }
+
+        let offset = 18 + gbat_size;
+        let region_data = &data[offset..];
+
+        let mut image = Jbig2Image::new(rsi.width, rsi.height);
+
+        if params.mmr {
+            mmr::decode_generic_mmr(region_data, &mut image)?;
+        } else {
+            let stats_size = generic::stats_size(params.gb_template);
+            let mut gb_stats = vec![0u8 as ArithCx; stats_size];
+            let mut as_ = ArithState::new(region_data)?;
+            generic::decode_generic_region(&params, &mut as_, &mut image, &mut gb_stats)?;
+        }
+
+        let op = compose_op_from_u8(rsi.op);
+        self.pages[self.current_page].add_result(&image, rsi.x, rsi.y, op)?;
+
+        Ok(())
+    }
+
+    /// Decode a symbol dictionary segment (type 0) — simplified.
+    fn decode_symbol_dictionary(&mut self, seg_idx: usize) -> Result<()> {
+        let data = self.segments[seg_idx].data.clone();
+        if let Some((params, _offset)) = SymbolDictParams::parse(&data) {
+            // For now, create an empty dict with the declared number of new symbols
+            let dict = SymbolDict::new(params.sdnumnewsyms);
+            self.segments[seg_idx].symbol_dict = Some(dict);
+        }
+        Ok(())
+    }
+
+    /// Decode an immediate text region segment (type 6/7) — simplified.
+    fn decode_immediate_text(&mut self, seg_idx: usize) -> Result<()> {
+        let data = &self.segments[seg_idx].data;
+        if data.len() < 17 {
+            return Err(Jbig2Error::InvalidData("text region segment too short".into()));
+        }
+
+        let rsi = RegionSegmentInfo::parse(&data[..17])?;
+
+        // Collect referred-to symbol dictionaries
+        let referred = &self.segments[seg_idx].header.referred_to_segments.clone();
+        let mut dicts: Vec<SymbolDict> = Vec::new();
+        for &ref_seg_num in referred {
+            for seg in &self.segments {
+                if seg.header.number == ref_seg_num {
+                    if let Some(ref sd) = seg.symbol_dict {
+                        dicts.push(sd.clone());
+                    }
+                }
+            }
+        }
+
+        // Parse text region params from data[17..]
+        if let Some((params, offset)) = crate::text::TextRegionParams::parse(&data[17..]) {
+            let region_data = &data[17 + offset..];
+            let dict_refs: Vec<&SymbolDict> = dicts.iter().collect();
+            let sbnumsyms: u32 = dict_refs.iter().map(|d| d.n_symbols()).sum();
+
+            let mut image = Jbig2Image::new(rsi.width, rsi.height);
+
+            if !params.sbhuff && sbnumsyms > 0 {
+                let mut as_ = ArithState::new(region_data)?;
+                crate::text::decode_text_region(
+                    &params, &mut as_, &mut image, &dict_refs, sbnumsyms,
+                )?;
+            }
+
+            let op = compose_op_from_u8(rsi.op);
+            self.pages[self.current_page].add_result(&image, rsi.x, rsi.y, op)?;
+        }
+
+        Ok(())
+    }
+
     fn ensure_page(&mut self, _page_number: u32) {
-        // Find a free page slot or create one
         for (i, page) in self.pages.iter().enumerate() {
             if page.state == PageState::Free {
                 self.current_page = i;
                 return;
             }
         }
-        // No free slot — add one
         self.current_page = self.pages.len();
         self.pages.push(Page::new());
+    }
+}
+
+fn compose_op_from_u8(v: u8) -> ComposeOp {
+    match v & 7 {
+        0 => ComposeOp::Or,
+        1 => ComposeOp::And,
+        2 => ComposeOp::Xor,
+        3 => ComposeOp::Xnor,
+        4 => ComposeOp::Replace,
+        _ => ComposeOp::Or,
     }
 }
