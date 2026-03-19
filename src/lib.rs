@@ -14,6 +14,11 @@
 //! }
 //! ```
 
+#![cfg_attr(not(feature = "std"), no_std)]
+extern crate alloc;
+
+use alloc::vec::Vec;
+
 // Internal modules
 pub mod error;
 pub mod image;

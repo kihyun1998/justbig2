@@ -2,6 +2,8 @@
 //!
 //! Ported from jbig2dec/jbig2_mmr.c.
 
+use alloc::vec;
+
 use crate::error::{Jbig2Error, Result};
 use crate::image::Jbig2Image;
 

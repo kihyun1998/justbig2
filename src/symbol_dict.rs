@@ -3,6 +3,9 @@
 //! A symbol dictionary contains an array of glyph bitmaps that can be
 //! referenced by text region segments for character placement.
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 use crate::image::Jbig2Image;
 
 /// A symbol dictionary — an array of glyph images.

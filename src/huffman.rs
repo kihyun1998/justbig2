@@ -2,6 +2,9 @@
 //!
 //! Ported from jbig2dec/jbig2_huffman.c and jbig2_hufftab.c.
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 use crate::error::{Jbig2Error, Result};
 
 /// A single line in a Huffman table definition.

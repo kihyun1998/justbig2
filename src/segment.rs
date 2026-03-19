@@ -1,5 +1,7 @@
 //! JBIG2 segment header parsing and dispatch (ITU T.88 7.2, 7.3).
 
+use alloc::vec::Vec;
+
 use crate::error::{Jbig2Error, Result};
 
 /// Segment type codes (lower 6 bits of flags).

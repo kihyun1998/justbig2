@@ -3,6 +3,8 @@
 //! Pattern dictionaries define tile patterns; halftone regions place them
 //! on a grid using gray-scale index values decoded from bitplanes.
 
+use alloc::vec::Vec;
+
 use crate::error::Result;
 use crate::image::{ComposeOp, Jbig2Image};
 

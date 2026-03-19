@@ -355,14 +355,16 @@ pub struct Page {
 - Compose 바이트/워드 정렬 최적화
 - 벤치마크 (`cargo bench`)
 
-**테스트:** 벤치마크 회귀 확인 (기준값 대비)
+**테스트:** `cargo bench` — decode_annex_h ~26µs, decode_annex_h_byte_by_byte ~29µs
 
-### Step 12.3 — `no_std` 지원 (선택)
+### Step 12.3 — `no_std` 지원
 
-- `alloc` crate 사용, std 의존 제거
+- `#![cfg_attr(not(feature = "std"), no_std)]` + `extern crate alloc`
+- `alloc::vec::Vec`, `alloc::string::String` 사용
+- `std::error::Error` impl은 `#[cfg(feature = "std")]` 조건부
 - feature flag: `default = ["std"]`
 
-**테스트:** `cargo test --no-default-features`
+**테스트:** `cargo check --no-default-features` (라이브러리 빌드 검증)
 
 ---
 

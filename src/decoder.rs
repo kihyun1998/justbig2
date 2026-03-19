@@ -1,5 +1,8 @@
 //! JBIG2 decoder context — top-level state machine.
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 use crate::arith::{ArithCx, ArithState};
 use crate::error::{Jbig2Error, Result};
 use crate::generic::{self, GenericRegionParams};

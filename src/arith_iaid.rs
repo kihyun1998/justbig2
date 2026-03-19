@@ -2,6 +2,9 @@
 //!
 //! Ported from jbig2dec/jbig2_arith_iaid.c.
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 use crate::arith::{ArithCx, ArithState};
 use crate::error::{Jbig2Error, Result};
 

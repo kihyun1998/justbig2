@@ -1,4 +1,6 @@
-use std::fmt;
+use core::fmt;
+extern crate alloc;
+use alloc::string::String;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Jbig2Error {
@@ -17,6 +19,7 @@ impl fmt::Display for Jbig2Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Jbig2Error {}
 
-pub type Result<T> = std::result::Result<T, Jbig2Error>;
+pub type Result<T> = core::result::Result<T, Jbig2Error>;

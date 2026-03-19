@@ -3,6 +3,8 @@
 //! Supports Templates 0-3 with optimized and unoptimized paths,
 //! plus TPGD (Typical Prediction).
 
+use alloc::vec::Vec;
+
 use crate::arith::{ArithCx, ArithState};
 use crate::error::{Jbig2Error, Result};
 use crate::image::Jbig2Image;
