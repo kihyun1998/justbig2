@@ -49,6 +49,20 @@ let pages = justbig2::decode(&data)?;
 let pages = justbig2::decode_embedded(&data)?;
 ```
 
+### PDF with global segments
+
+```rust
+// One-shot with globals
+let pages = justbig2::decode_embedded_with_globals(&stream, &globals)?;
+
+// Or cache globals for reuse across many images
+let cached = justbig2::Decoder::parse_globals(&globals)?;
+
+let mut decoder = justbig2::Decoder::new_embedded();
+decoder.set_global_segments(cached);
+decoder.write(&stream)?;
+```
+
 ### Streaming decoder
 
 ```rust

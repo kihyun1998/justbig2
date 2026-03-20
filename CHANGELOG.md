@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-03-20
+
+### Added
+- Global segment support for PDF JBIG2 streams
+  - `Decoder::set_globals()` — load raw global data
+  - `Decoder::parse_globals()` — parse and cache for reuse
+  - `Decoder::set_global_segments()` — apply cached globals
+  - `decode_embedded_with_globals()` convenience function
+- `StoredSegment` re-exported for advanced caching use cases
+- `Default` impls for `Decoder`, `Page`, `ArithIntCtx`
+
+### Changed
+- Symbol dictionary and text region decoding now resolve referred segments from both local and global stores
+
+### Fixed
+- Clippy warnings: unnecessary casts, identity ops, needless range loops
+- Removed unused `MmrCtx::peek()` method
+- Removed redundant `embedded` field from `Decoder`
+
 ## [0.1.2] - 2026-03-20
 
 ### Added
