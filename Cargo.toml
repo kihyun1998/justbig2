@@ -2,6 +2,7 @@
 name = "justbig2"
 version = "0.1.1"
 edition = "2021"
+rust-version = "1.56.0"
 authors = ["Ki Hyun Park <justkihyun1998@gmail.com>"]
 description = "Pure Rust JBIG2 image decoder with no_std support"
 license = "MIT OR Apache-2.0"

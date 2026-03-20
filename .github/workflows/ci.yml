@@ -49,6 +49,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --all-features -- -D warnings
 
+  msrv:
+    name: MSRV (1.56.0)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.56.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --all-features
+
   no_std:
     name: no_std
     runs-on: ubuntu-latest

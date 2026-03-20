@@ -104,6 +104,10 @@ let pixel = page.get_pixel(x, y);
 - **12 adaptive template pixels (T.88 amendment 2)** — Not supported.
 - **Colored region segments (T.88 amendment 3)** — Not supported.
 
+## Minimum Supported Rust Version
+
+The MSRV is **1.56.0** (Rust edition 2021).
+
 ## `no_std` Usage
 
 Disable the default `std` feature:
