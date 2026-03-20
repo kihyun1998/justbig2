@@ -487,8 +487,8 @@ pub fn parse_user_table(data: &[u8]) -> Result<HuffmanParams> {
 
     let flags = data[0];
     let htoob = (flags & 0x01) != 0;
-    let htps = ((flags >> 1) & 0x07) as u8 + 1;
-    let htrs = ((flags >> 4) & 0x07) as u8 + 1;
+    let htps = ((flags >> 1) & 0x07) + 1;
+    let htrs = ((flags >> 4) & 0x07) + 1;
 
     let htlow = i32::from_be_bytes([data[1], data[2], data[3], data[4]]);
     let hthigh = i32::from_be_bytes([data[5], data[6], data[7], data[8]]);

@@ -41,7 +41,7 @@ pub mod halftone;
 // --- Public API re-exports ---
 
 pub use error::{Jbig2Error, Result};
-pub use decoder::Decoder;
+pub use decoder::{Decoder, StoredSegment};
 
 /// A decoded JBIG2 page image.
 #[derive(Debug, Clone)]
@@ -95,6 +95,26 @@ pub fn decode(data: &[u8]) -> Result<Vec<Page>> {
 /// Convenience: decode an embedded (headerless) JBIG2 stream.
 pub fn decode_embedded(data: &[u8]) -> Result<Vec<Page>> {
     let mut decoder = Decoder::new_embedded();
+    decoder.write(data)?;
+    let mut pages = Vec::new();
+    while let Some(page) = decoder.page() {
+        pages.push(page);
+    }
+    Ok(pages)
+}
+
+/// Convenience: decode an embedded JBIG2 stream with global segment data.
+///
+/// In PDF, JBIG2 images can share global segments (typically symbol
+/// dictionaries) across multiple streams. Pass the global data from the
+/// `JBIG2Globals` entry and the per-image stream data.
+///
+/// For decoding many images that share the same globals, use
+/// [`Decoder::parse_globals()`] once and [`Decoder::set_global_segments()`]
+/// on each decoder instead, to avoid re-parsing.
+pub fn decode_embedded_with_globals(data: &[u8], globals: &[u8]) -> Result<Vec<Page>> {
+    let mut decoder = Decoder::new_embedded();
+    decoder.set_globals(globals)?;
     decoder.write(data)?;
     let mut pages = Vec::new();
     while let Some(page) = decoder.page() {

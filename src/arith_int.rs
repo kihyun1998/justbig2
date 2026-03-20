@@ -10,6 +10,12 @@ pub struct ArithIntCtx {
     iax: [ArithCx; 512],
 }
 
+impl Default for ArithIntCtx {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ArithIntCtx {
     pub fn new() -> Self {
         ArithIntCtx { iax: [0u8; 512] }

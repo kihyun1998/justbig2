@@ -29,6 +29,12 @@ pub struct Page {
     pub image: Option<Jbig2Image>,
 }
 
+impl Default for Page {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Page {
     pub fn new() -> Self {
         Page {

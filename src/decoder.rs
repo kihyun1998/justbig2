@@ -36,7 +36,6 @@ pub struct StoredSegment {
 /// Top-level JBIG2 decoder context.
 pub struct Decoder {
     pub(crate) state: DecoderState,
-    pub(crate) embedded: bool,
     pub(crate) buf: Vec<u8>,
     pub(crate) segments: Vec<StoredSegment>,
     pub(crate) segment_index: usize,
@@ -46,6 +45,12 @@ pub struct Decoder {
     pub(crate) global_segments: Vec<StoredSegment>,
 }
 
+impl Default for Decoder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Decoder {
     /// Create a new decoder for a full JBIG2 file stream.
     pub fn new() -> Self {
@@ -53,7 +58,6 @@ impl Decoder {
         pages.push(Page::new());
         Decoder {
             state: DecoderState::FileHeader,
-            embedded: false,
             buf: Vec::new(),
             segments: Vec::new(),
             segment_index: 0,
@@ -70,7 +74,6 @@ impl Decoder {
         pages.push(Page::new());
         Decoder {
             state: DecoderState::SequentialHeader,
-            embedded: true,
             buf: Vec::new(),
             segments: Vec::new(),
             segment_index: 0,
@@ -96,6 +99,57 @@ impl Decoder {
             }
         }
         None
+    }
+
+    /// Load global segment data (e.g., from a PDF JBIG2Globals stream).
+    ///
+    /// In PDF, JBIG2 images can share global segments (typically symbol
+    /// dictionaries) across multiple embedded streams. Call this before
+    /// [`write()`](Decoder::write) on the embedded stream.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let mut decoder = Decoder::new_embedded();
+    /// decoder.set_globals(globals_data)?;
+    /// decoder.write(stream_data)?;
+    /// ```
+    pub fn set_globals(&mut self, globals_data: &[u8]) -> Result<()> {
+        let mut tmp = Decoder::new_embedded();
+        tmp.write(globals_data)?;
+        self.global_segments = tmp.segments;
+        Ok(())
+    }
+
+    /// Set pre-parsed global segments directly.
+    ///
+    /// Useful when the same globals are shared across many images —
+    /// parse once with [`parse_globals()`](Decoder::parse_globals),
+    /// then reuse with each decoder.
+    pub fn set_global_segments(&mut self, segments: Vec<StoredSegment>) {
+        self.global_segments = segments;
+    }
+
+    /// Parse global data and return the resulting segments for caching.
+    ///
+    /// Use with [`set_global_segments()`](Decoder::set_global_segments)
+    /// to avoid re-parsing the same globals for every image.
+    pub fn parse_globals(globals_data: &[u8]) -> Result<Vec<StoredSegment>> {
+        let mut tmp = Decoder::new_embedded();
+        tmp.write(globals_data)?;
+        Ok(tmp.segments)
+    }
+
+    /// Find a stored segment by number, searching local segments first,
+    /// then global segments.
+    fn find_segment(&self, seg_number: u32) -> Option<&StoredSegment> {
+        self.segments
+            .iter()
+            .find(|s| s.header.number == seg_number)
+            .or_else(|| {
+                self.global_segments
+                    .iter()
+                    .find(|s| s.header.number == seg_number)
+            })
     }
 
     /// Internal: process buffered data through the state machine.
@@ -268,8 +322,21 @@ impl Decoder {
     /// Decode a symbol dictionary segment (type 0) — simplified.
     fn decode_symbol_dictionary(&mut self, seg_idx: usize) -> Result<()> {
         let data = self.segments[seg_idx].data.clone();
-        if let Some((params, _offset)) = SymbolDictParams::parse(&data) {
-            // For now, create an empty dict with the declared number of new symbols
+        let referred = self.segments[seg_idx].header.referred_to_segments.clone();
+
+        // Collect input symbol dictionaries from referred segments (local + global)
+        let mut input_dicts: Vec<SymbolDict> = Vec::new();
+        for ref_seg_num in &referred {
+            if let Some(seg) = self.find_segment(*ref_seg_num) {
+                if let Some(ref sd) = seg.symbol_dict {
+                    input_dicts.push(sd.clone());
+                }
+            }
+        }
+        let sdnuminsyms: u32 = input_dicts.iter().map(|d| d.n_symbols()).sum();
+
+        if let Some((mut params, _offset)) = SymbolDictParams::parse(&data) {
+            params.sdnuminsyms = sdnuminsyms;
             let dict = SymbolDict::new(params.sdnumnewsyms);
             self.segments[seg_idx].symbol_dict = Some(dict);
         }
@@ -285,15 +352,13 @@ impl Decoder {
 
         let rsi = RegionSegmentInfo::parse(&data[..17])?;
 
-        // Collect referred-to symbol dictionaries
-        let referred = &self.segments[seg_idx].header.referred_to_segments.clone();
+        // Collect referred-to symbol dictionaries (local + global)
+        let referred = self.segments[seg_idx].header.referred_to_segments.clone();
         let mut dicts: Vec<SymbolDict> = Vec::new();
-        for &ref_seg_num in referred {
-            for seg in &self.segments {
-                if seg.header.number == ref_seg_num {
-                    if let Some(ref sd) = seg.symbol_dict {
-                        dicts.push(sd.clone());
-                    }
+        for ref_seg_num in &referred {
+            if let Some(seg) = self.find_segment(*ref_seg_num) {
+                if let Some(ref sd) = seg.symbol_dict {
+                    dicts.push(sd.clone());
                 }
             }
         }

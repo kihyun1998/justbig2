@@ -44,8 +44,8 @@ impl GenericRegionParams {
     /// Fill GBAT from data slice.
     pub fn set_gbat(&mut self, data: &[u8]) {
         let n = if self.gb_template == 0 { 8 } else { 2 };
-        for i in 0..n.min(data.len()) {
-            self.gbat[i] = data[i] as i8;
+        for (i, &b) in data.iter().take(n).enumerate() {
+            self.gbat[i] = b as i8;
         }
     }
 }

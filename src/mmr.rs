@@ -53,10 +53,6 @@ impl<'a> MmrCtx<'a> {
         }
     }
 
-    fn peek(&self, n: u32) -> u32 {
-        self.word >> (32 - n)
-    }
-
     fn consumed_bytes(&self) -> usize {
         (self.consumed_bits + 7) / 8
     }

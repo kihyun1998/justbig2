@@ -67,7 +67,7 @@ fn decode_refinement_template0(
 
             let mut context: u32 = 0;
             // Current image pixels
-            context |= (image.get_pixel((ix - 1) as u32, y) as u32) << 0;
+            context |= image.get_pixel((ix - 1) as u32, y) as u32;
             context |= (image.get_pixel((ix + 1) as u32, (iy - 1) as u32) as u32) << 1;
             context |= (image.get_pixel(x, (iy - 1) as u32) as u32) << 2;
             // Adaptive pixel
@@ -118,7 +118,7 @@ fn decode_refinement_template1(
 
             let mut context: u32 = 0;
             // Current image pixels
-            context |= (image.get_pixel((ix - 1) as u32, y) as u32) << 0;
+            context |= image.get_pixel((ix - 1) as u32, y) as u32;
             context |= (image.get_pixel((ix + 1) as u32, (iy - 1) as u32) as u32) << 1;
             context |= (image.get_pixel(x, (iy - 1) as u32) as u32) << 2;
             context |= (image.get_pixel((ix - 1) as u32, (iy - 1) as u32) as u32) << 3;
@@ -164,7 +164,7 @@ fn build_context(params: &RefinementRegionParams, image: &Jbig2Image, x: u32, y:
     if params.gr_template != 0 {
         // Template 1
         let mut ctx: u32 = 0;
-        ctx |= (image.get_pixel((ix - 1) as u32, y) as u32) << 0;
+        ctx |= image.get_pixel((ix - 1) as u32, y) as u32;
         ctx |= (image.get_pixel((ix + 1) as u32, (iy - 1) as u32) as u32) << 1;
         ctx |= (image.get_pixel(x, (iy - 1) as u32) as u32) << 2;
         ctx |= (image.get_pixel((ix - 1) as u32, (iy - 1) as u32) as u32) << 3;
@@ -178,7 +178,7 @@ fn build_context(params: &RefinementRegionParams, image: &Jbig2Image, x: u32, y:
     } else {
         // Template 0
         let mut ctx: u32 = 0;
-        ctx |= (image.get_pixel((ix - 1) as u32, y) as u32) << 0;
+        ctx |= image.get_pixel((ix - 1) as u32, y) as u32;
         ctx |= (image.get_pixel((ix + 1) as u32, (iy - 1) as u32) as u32) << 1;
         ctx |= (image.get_pixel(x, (iy - 1) as u32) as u32) << 2;
         ctx |= (image.get_pixel((ix + params.grat[0] as i32) as u32, (iy + params.grat[1] as i32) as u32) as u32) << 3;
